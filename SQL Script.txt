@@ -1,0 +1,132 @@
+/****** Object:  Table [dbo].[ShopBridgeInventory]    Script Date: 09-05-2021 22:12:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_PADDING ON
+GO
+CREATE TABLE [dbo].[ShopBridgeInventory](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[ItemName] [varchar](1000) NULL,
+	[ItemDescription] [varchar](max) NULL,
+	[ItemPrice] [decimal](18, 2) NULL,
+	[ItemCategory] [varchar](max) NULL,
+	[ImageFileName] [varchar](max) NULL,
+	[ImageFileExtension] [varchar](200) NULL,
+	[ImageFilePath] [varchar](max) NULL,
+	[ImageFileSize] [bigint] NULL,
+	[IsItemInStock] [bit] NULL DEFAULT ((0)),
+	[CreatedBy] [varchar](200) NULL,
+	[CreatedOn] [datetime] NULL,
+	[UpdatedBy] [varchar](200) NULL,
+	[UpdatedOn] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+SET ANSI_PADDING OFF
+GO
+/****** Object:  StoredProcedure [dbo].[Sp_AddNewInventory]    Script Date: 09-05-2021 22:12:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- Exec dbo.Sp_AddNewInventory 'Smart ','Abc',15000,'Elec','','','',0,'Ranjan'
+CREATE Proc [dbo].[Sp_AddNewInventory]
+(
+@ItemName varchar(1000),
+@ItemDescription varchar(max),
+@ItemPrice decimal(18,2),
+@ItemCategory varchar(max),
+@ImageFileName varchar(max),
+@ImageFileExtension varchar(200),
+@ImageFilePath varchar(max),
+@ImageFileSize bigint,
+@CreatedBy varchar(200)
+)
+As
+Begin
+
+	Declare @IsValid bit,@Message varchar(100)
+
+	Insert Into dbo.ShopBridgeInventory(ItemName,ItemDescription,ItemPrice,ItemCategory,ImageFileName,ImageFileExtension,
+										ImageFilePath,ImageFileSize,IsItemInStock,CreatedBy,CreatedOn)
+								Values (@ItemName,@ItemDescription,Cast(@ItemPrice as decimal(18,2)),@ItemCategory,@ImageFileName,@ImageFileExtension,
+										@ImageFilePath,@ImageFileSize,1,@CreatedBy,Getdate())
+	SET @IsValid = 1
+	SET @Message = 'Inventory Added Successfully'
+
+	Select @IsValid As IsValid,@Message As Message
+
+End
+GO
+/****** Object:  StoredProcedure [dbo].[Sp_DeletItemFromInventories]    Script Date: 09-05-2021 22:12:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE Proc [dbo].[Sp_DeletItemFromInventories]
+(
+@ItemId int
+)
+As
+Begin
+
+	Declare @IsValid bit,@Message varchar(100)
+
+	Delete from dbo.ShopBridgeInventory Where Id = @ItemId
+
+	SET @IsValid = 1
+	SET @Message = 'Item Deleted Successfully'
+
+	Select @IsValid As IsValid,@Message As Message
+
+End
+GO
+/****** Object:  StoredProcedure [dbo].[Sp_GetInventories]    Script Date: 09-05-2021 22:12:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+Create Proc [dbo].[Sp_GetInventories]
+As
+Begin
+
+	Select Id,ItemName,ItemDescription,ItemPrice,ItemCategory,ImageFileName,ImageFileExtension,
+		   ImageFilePath,ImageFileSize,IsItemInStock,CreatedBy,CreatedOn from dbo.ShopBridgeInventory
+
+End
+GO
+/****** Object:  StoredProcedure [dbo].[Sp_UpdateItemInfos]    Script Date: 09-05-2021 22:12:50 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+Create Proc [dbo].[Sp_UpdateItemInfos]
+(
+@ItemId int,
+@ItemName varchar(1000),
+@ItemDescription varchar(max),
+@ItemPrice decimal(18,2),
+@ItemCategory varchar(max),
+@CreatedBy varchar(200)
+)
+As
+Begin
+
+	Declare @IsValid bit,@Message varchar(100)
+
+	Update dbo.ShopBridgeInventory SET ItemName = @ItemName,ItemDescription = @ItemDescription,
+									   ItemPrice = @ItemPrice,ItemCategory =  @ItemCategory,
+									   UpdatedBy = @CreatedBy, UpdatedOn = Getdate()  Where Id = @ItemId
+
+	SET @IsValid = 1
+	SET @Message = 'Item Updated Successfully'
+
+	Select @IsValid As IsValid,@Message As Message
+
+End
+GO
